@@ -1,0 +1,99 @@
+---
+title: "Homework 5"
+author: "Chaoyu Zhai"
+date: "11/22/2019"
+output: word_document
+---
+
+
+```{r global_options, echo=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, error = FALSE)
+```
+
+Loading all the packages might be needed
+```{r message=FALSE, warning=FALSE}
+
+ 
+library(package = "tibble")
+library(package = "tibble")
+library(readr)
+library("stringr")
+library(package = "haven")
+library(package = "forcats")
+library(package = "stringr")
+library(package = "magrittr")
+library(gridExtra)
+library(ggthemes)
+library("ggplot2")
+library("faraway")
+library(tidyr)
+library(knitr)
+library(forcats)
+library(purrr)
+library(broom)
+library(scales)
+library(listviewer)
+library(digest)
+library(dlnm)
+library(purrr)
+library(ggplot2)
+library(ggfortify)
+library(tibble)
+library(lubridate)
+library(tidyverse)
+library("dplyr")
+```
+
+
+
+## Load Data
+
+```{r data, message=FALSE, warning=FALSE, results='hide'}
+homicides <-  read_csv(file= "~/Desktop/Class/ERHS581 R Programming/Class project/data/homicide-data.csv") 
+head(homicides)
+```
+
+```{r plot2, fig.height=4, fig.width=8.5, fig.align='center'}
+
+FCG <- homicides %>% 
+  filter(victim_last == "GREY" & victim_first == "FREDDIE CARLOS") %>% 
+  mutate(reported_date = ymd(reported_date),
+         month = month(reported_date, label = TRUE),
+         year = year(reported_date),
+         Date = format(reported_date, "%Y-%m", label = TRUE),
+         Date = ymd(Date, truncated = 1)) %>% 
+  group_by(Date) %>% 
+  count()
+
+
+homicides %>% 
+  filter(city == "Baltimore") %>% 
+  mutate(reported_date = ymd(reported_date),
+         month = month(reported_date, label = TRUE),
+         year = year(reported_date),
+         Date = format(reported_date, "%Y-%m", label = TRUE),
+         Date = ymd(Date, truncated = 1),
+         Summer = month %in% "May" | month %in% "Jun" | month %in% "Jul" |
+                  month %in% "Aug" | month %in% "Sep" | month %in% "Oct",
+         Winter = Summer == FALSE,
+         Summer = ifelse(Summer == TRUE, "Summer", ""),
+         Winter = ifelse(Winter == TRUE, "Winter", "")) %>% 
+  unite(season, Summer, Winter, sep = "") %>% 
+  group_by(Date, season) %>% 
+  count() %>% 
+  ungroup() %>% 
+  ggplot(aes(x = Date, y = n)) +
+  geom_bar(aes(fill = season), stat = "identity") +
+  geom_smooth(se = FALSE, n = 150, span = 0.1) +
+  geom_vline(data = FCG, aes(xintercept = Date), 
+             color = "red", linetype = "dashed", size = 1) +
+  geom_text(data = FCG, label = "Arrest of \n Freddie Gray", 
+            color = "white", vjust = -5, hjust = 1) +
+  scale_fill_manual(values = c("Winter" = "lightblue3", 
+                               "Summer" = "lightgray")) +
+  labs(x = "Date", y = "Monthly homicides") +
+  ggtitle("Homicides in Baltimore, MD") +
+  theme_dark() +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom") 
+```
